@@ -1,0 +1,18 @@
+Collecting chembl_webresource_client
+  Downloading https://files.pythonhosted.org/packages/2e/48/0db29040c92726fcc6f99a5bc89e0ea8cf5a9d84753ebaaf53108792da2a/chembl-webresource-client-0.10.2.tar.gz (51kB)
+     |████████████████████████████████| 61kB 2.1MB/s 
+Requirement already satisfied: urllib3 in /usr/local/lib/python3.6/dist-packages (from chembl_webresource_client) (1.24.3)
+Requirement already satisfied: requests>=2.18.4 in /usr/local/lib/python3.6/dist-packages (from chembl_webresource_client) (2.23.0)
+Collecting requests-cache>=0.4.7
+  Downloading https://files.pythonhosted.org/packages/7f/55/9b1c40eb83c16d8fc79c5f6c2ffade04208b080670fbfc35e0a5effb5a92/requests_cache-0.5.2-py2.py3-none-any.whl
+Requirement already satisfied: easydict in /usr/local/lib/python3.6/dist-packages (from chembl_webresource_client) (1.9)
+Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/dist-packages (from requests>=2.18.4->chembl_webresource_client) (2.9)
+Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/dist-packages (from requests>=2.18.4->chembl_webresource_client) (3.0.4)
+Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/dist-packages (from requests>=2.18.4->chembl_webresource_client) (2020.4.5.1)
+Building wheels for collected packages: chembl-webresource-client
+  Building wheel for chembl-webresource-client (setup.py) ... done
+  Created wheel for chembl-webresource-client: filename=chembl_webresource_client-0.10.2-cp36-none-any.whl size=55661 sha256=a52d78c7928723755f476d68cdfcd640830e02a8ab2d24d68d28e0d0df1dcf8d
+  Stored in directory: /root/.cache/pip/wheels/e6/96/19/3f042bfda7c669bfe24c8278477f57b0fbbf3e488b4c09e3a8
+Successfully built chembl-webresource-client
+Installing collected packages: requests-cache, chembl-webresource-client
+Successfully installed chembl-webresource-client-0.10.2 requests-cache-0.5.2
