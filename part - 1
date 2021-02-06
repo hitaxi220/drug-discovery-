@@ -1,18 +1,85 @@
-Collecting chembl_webresource_client
-  Downloading https://files.pythonhosted.org/packages/2e/48/0db29040c92726fcc6f99a5bc89e0ea8cf5a9d84753ebaaf53108792da2a/chembl-webresource-client-0.10.2.tar.gz (51kB)
-     |████████████████████████████████| 61kB 2.1MB/s 
-Requirement already satisfied: urllib3 in /usr/local/lib/python3.6/dist-packages (from chembl_webresource_client) (1.24.3)
-Requirement already satisfied: requests>=2.18.4 in /usr/local/lib/python3.6/dist-packages (from chembl_webresource_client) (2.23.0)
-Collecting requests-cache>=0.4.7
-  Downloading https://files.pythonhosted.org/packages/7f/55/9b1c40eb83c16d8fc79c5f6c2ffade04208b080670fbfc35e0a5effb5a92/requests_cache-0.5.2-py2.py3-none-any.whl
-Requirement already satisfied: easydict in /usr/local/lib/python3.6/dist-packages (from chembl_webresource_client) (1.9)
-Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/dist-packages (from requests>=2.18.4->chembl_webresource_client) (2.9)
-Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/dist-packages (from requests>=2.18.4->chembl_webresource_client) (3.0.4)
-Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/dist-packages (from requests>=2.18.4->chembl_webresource_client) (2020.4.5.1)
-Building wheels for collected packages: chembl-webresource-client
-  Building wheel for chembl-webresource-client (setup.py) ... done
-  Created wheel for chembl-webresource-client: filename=chembl_webresource_client-0.10.2-cp36-none-any.whl size=55661 sha256=a52d78c7928723755f476d68cdfcd640830e02a8ab2d24d68d28e0d0df1dcf8d
-  Stored in directory: /root/.cache/pip/wheels/e6/96/19/3f042bfda7c669bfe24c8278477f57b0fbbf3e488b4c09e3a8
-Successfully built chembl-webresource-client
-Installing collected packages: requests-cache, chembl-webresource-client
-Successfully installed chembl-webresource-client-0.10.2 requests-cache-0.5.2
+# necessary imports first:
+from chembl_webresource_client import *
+
+# create resource object:
+compounds = CompoundResource()
+
+# before you do anythong else, please check webservices status:
+print compounds.status()
+True
+
+# If you get 'False' instead, this could mean that your internet connection is broken, 
+# your settings are pointing to the wrong server or the server itself is down. 
+
+# get single compound by ChEMBL:
+c = compounds.get('CHEMBL1')
+
+# `c` is now a python dictionary:
+print c
+{u'smiles': u'COc1ccc2[C@@H]3[C@H](COc2c1)C(C)(C)OC4=C3C(=O)C(=O)C5=C4OC(C)(C)[C@@H]6COc7cc(OC)ccc7[C@H]56', 
+u'chemblId': u'CHEMBL1', u'passesRuleOfThree': u'No', 
+u'molecularWeight': 544.59, u'molecularFormula': u'C32H32O8', 
+u'acdLogp': 7.67, u'stdInChiKey': u'GHBOEFUAGSHXPO-XZOTUCIWSA-N', 
+u'knownDrug': u'No', u'medChemFriendly': u'Yes', u'rotatableBonds': 2, 
+u'alogp': 3.63, u'numRo5Violations': 1, u'acdLogd': 7.67}
+
+# for those who prefer xml, this will return xml string:
+# question for the reader: why we choose 'frmt' parameter name, instead of 'format'?
+c = compounds.get('CHEMBL1', frmt='xml')
+print c
+"<?xml version='1.0' encoding='utf-8'?>\n<compound><smiles>COc1ccc2...</compound>"
+
+# we can get compound by the standard inchi key as well:
+c = compounds.get(stdinchikey='QFFGVLORLPOAEC-SNVBAGLBSA-N')
+print c['molecularFormula']
+'C19H21ClFN3O3'
+
+# ... or by SMILES, in which case, a list of dictionaries will be returned:
+cs = compounds.get(smiles='COc1ccc2[C@@H]3[C@H](COc2c1)C(C)(C)OC4=C3C(=O)C(=O)C5=C4OC(C)(C)[C@@H]6COc7cc(OC)ccc7[C@H]56')
+print cs[0]['stdInChiKey']
+'GHBOEFUAGSHXPO-UWXQAFAOSA-N'
+
+# it's so easy to perform substructure search:
+cs = compounds.substructure('COcccc')
+
+# similarity search is super easy as well:
+cs = compounds.similar_to('COc1ccc2[C@@H]3[C@H](COc2c1)C(C)(C)OC4=C3C(=O)C(=O)C5=C4OC(C)(C)[C@@H]6COc7cc(OC)ccc7[C@H]56', 70)
+
+# OK, some more complex stuff now - let's get all compound of ids from CHEMBL1 to CHEMBL300:
+cs = compounds.get(['CHEMBL%s' % x for x in range(1,301)])
+
+# do it again and you will notice it's faster now - cache is working:
+cs = compounds.get(['CHEMBL%s' % x for x in range(1,301)])
+
+# lets see how many compounds we got back:
+len(cs)
+300
+
+# hmm, this is strange beacuse there is no compound with chembID = CHEMBL300...
+cs[299]
+404
+
+# OK, so for some compounds the server will return an error, e.g. 404 = compound does not exist
+# This is fine, as we can remove the 'invalid' compounds with a filter:
+
+valid_compounds = filter(lambda x: not isinstance(x, int), cs)
+len(valid_compounds)
+170
+
+# new stuff is working as well, so you can get compound forms...:
+print compounds.forms('CHEMBL415863')
+[{u'chemblId': u'CHEMBL1207563', u'parent': True}, {u'chemblId': u'CHEMBL415863', u'parent': False}]
+
+# ... and drug mechanisms:
+print compounds.drug_mechnisms('CHEMBL1642')
+[{u'chemblId': u'CHEMBL1862', ..., u'mechanismOfAction': u'Stem cell growth factor receptor inhibitor'}]
+
+# displaying compound image looks like this:
+from StringIO import StringIO
+from PIL import Image
+
+buf = StringIO()
+buf.write(compounds.image('CHEMBL1'))
+buf.seek(0)
+im = Image.open(buf)
+im.show()
